@@ -152,47 +152,87 @@ function Home() {
   }
 
   return (
-    <div style={{ marginTop: navbarHeight }}>
-      {loading ? ( // Show Spinner when loading is true
-        <Spinner />
-      ) : ( // Show content after loading is false
+    <div style={{ padding: '2rem 1rem', maxWidth: '1400px', margin: '0 auto' }}>
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+          <Spinner />
+        </div>
+      ) : (
         <>
-          <div className="container taglineOut">
-            <h1 className="tagline">
-              Stay Ahead of the Weather: Anytime, Anywhere
+          {/* Hero Section */}
+          <div style={{
+            textAlign: 'center',
+            marginBottom: '3rem',
+            padding: '2rem',
+            background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
+            borderRadius: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          }}>
+            <h1 style={{
+              fontSize: '3rem',
+              fontWeight: '800',
+              background: 'linear-gradient(to right, #38bdf8, #8b5cf6)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              marginBottom: '1rem',
+              letterSpacing: '-0.02em',
+              lineHeight: 1.2
+            }}>
+              Weather Around the World
             </h1>
+            <p style={{
+              fontSize: '1.25rem',
+              color: '#94a3b8',
+              maxWidth: '600px',
+              margin: '0 auto'
+            }}>
+              Real-time weather updates for major cities across the globe
+            </p>
           </div>
-          <div className="container">
+
+          {/* Cards Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: '1.5rem',
+            animation: 'fadeIn 0.6s ease-in-out'
+          }}>
             {info.current.map((cityData, index) => (
-              <Card
+              <div
                 key={index}
-                name={cityData.location.name}
-                localTime={formatDateTime(cityData.location.localtime)}
-                temp_c={cityData.current.temp_c}
-                aqi_f={cityData.current.air_quality?.pm2_5 || "N/A"}
-                humidity={cityData.current.humidity}
-                rain={
-                  info.forecast[index]?.forecast.forecastday[0]?.day
-                    .daily_chance_of_rain || "0"
-                }
-                feelsLike_c={cityData.current.feelslike_c}
-                sunRise={info.astronomy[index]?.astronomy.astro.sunrise || ""}
-                sunSet={info.astronomy[index]?.astronomy.astro.sunset || ""}
-                localDate1={formatDateTime(
-                  info.forecast[index]?.forecast.forecastday[1]?.date || ""
-                )}
-                temp_c1={
-                  info.forecast[index]?.forecast.forecastday[1]?.day
-                    .avgtemp_c || ""
-                }
-                localDate2={formatDateTime(
-                  info.forecast[index]?.forecast.forecastday[2]?.date || ""
-                )}
-                temp_c2={
-                  info.forecast[index]?.forecast.forecastday[2]?.day
-                    .avgtemp_c || ""
-                }
-              />
+                style={{
+                  animation: `slideUp 0.5s ease-out ${index * 0.1}s both`
+                }}
+              >
+                <Card
+                  name={cityData.location.name}
+                  localTime={formatDateTime(cityData.location.localtime)}
+                  temp_c={cityData.current.temp_c}
+                  aqi_f={cityData.current.air_quality?.pm2_5 || "N/A"}
+                  humidity={cityData.current.humidity}
+                  rain={
+                    info.forecast[index]?.forecast.forecastday[0]?.day
+                      .daily_chance_of_rain || "0"
+                  }
+                  feelsLike_c={cityData.current.feelslike_c}
+                  sunRise={info.astronomy[index]?.astronomy.astro.sunrise || ""}
+                  sunSet={info.astronomy[index]?.astronomy.astro.sunset || ""}
+                  localDate1={formatDateTime(
+                    info.forecast[index]?.forecast.forecastday[1]?.date || ""
+                  )}
+                  temp_c1={
+                    info.forecast[index]?.forecast.forecastday[1]?.day
+                      .avgtemp_c || ""
+                  }
+                  localDate2={formatDateTime(
+                    info.forecast[index]?.forecast.forecastday[2]?.date || ""
+                  )}
+                  temp_c2={
+                    info.forecast[index]?.forecast.forecastday[2]?.day
+                      .avgtemp_c || ""
+                  }
+                />
+              </div>
             ))}
           </div>
         </>

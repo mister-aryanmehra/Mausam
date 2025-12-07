@@ -1,31 +1,26 @@
 import React, { useState, useEffect } from "react";
-import Spinner from './Spinning2.js'
+import Spinner from './Spinning2.js';
+import WeatherIcon from "./WeatherIcons";
+import { WiHumidity, WiStrongWind, WiRain, WiSunrise, WiSunset, WiBarometer } from 'react-icons/wi';
+import { FiWind } from 'react-icons/fi';
 
 function SearchResult({ query }) {
-  const [navbarHeight, setNavbarHeight] = useState(0);
   const [info, setInfo] = useState({
     current: null,
     astronomy: null,
     forecast: null,
   });
-  const [loading, setLoading] = useState(true); // Loading state
-
-  useEffect(() => {
-    const navbar = document.querySelector(".navbar");
-    if (navbar) {
-      setNavbarHeight(navbar.offsetHeight);
-    }
-  }, []);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (query) {
       const fetchSearchResults = async () => {
         try {
-          setLoading(true); // Start loading
-          
+          setLoading(true);
+
           const currentUrl = `https://api.weatherapi.com/v1/current.json?key=e6d92c11c9384c31aba94149240109&q=${query}&aqi=yes`;
           const astronomyUrl = `https://api.weatherapi.com/v1/astronomy.json?key=e6d92c11c9384c31aba94149240109&q=${query}`;
-          const forecastUrl = `https://api.weatherapi.com/v1/forecast.json?key=e6d92c11c9384c31aba94149240109&q=${query}&days=10&aqi=no&alerts=no`;
+          const forecastUrl = `https://api.weatherapi.com/v1/forecast.json?key=e6d92c11c9384c31aba94149240109&q=${query}&days=7&aqi=yes&alerts=no`;
 
           const [currentResponse, astronomyResponse, forecastResponse] = await Promise.all([
             fetch(currentUrl),
@@ -47,7 +42,7 @@ function SearchResult({ query }) {
         } catch (error) {
           console.error("Error fetching data:", error);
         } finally {
-          setLoading(false); // End loading
+          setLoading(false);
         }
       };
 
@@ -57,337 +52,345 @@ function SearchResult({ query }) {
 
   if (loading) {
     return (
-      <div className="loading" style={{ marginTop: navbarHeight }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
         <Spinner />
       </div>
     );
   }
 
-  // Check if all data is available
+  // Comprehensive validation
   if (!info.current || !info.astronomy || !info.forecast) {
     return (
-      <div className="error" style={{ marginTop: navbarHeight, color: "white" }}>
-        Data is not available at the moment.
+      <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+        <h2>Data is not available at the moment.</h2>
       </div>
     );
   }
 
-  function formatDateTime(dateString) {
-    if (!dateString) {
-      return "Invalid Date";
-    }
+  const { current, forecast, astronomy } = info;
 
-    const months = [
-      "Jan",
-      "Feb",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "Aug",
-      "Sept",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-
-    const [datePart, timePart] = dateString.split(" ");
-
-    if (!datePart) {
-      return "Invalid Date";
-    }
-
-    const [year, month, day] = datePart.split("-");
-
-    if (!year || !month || !day) {
-      return "Invalid Date";
-    }
-
-    const monthNumber = parseInt(month, 10);
-    if (isNaN(monthNumber) || monthNumber < 1 || monthNumber > 12) {
-      return "Invalid Date";
-    }
-
-    const formattedDay = parseInt(day, 10);
-    // const formattedYear = parseInt(year, 10);
-
-    const formattedMonth = months[monthNumber - 1];
-
-    if (!timePart) {
-      return `${formattedMonth} ${formattedDay}`;
-    }
-
-    const [hours, minutes] = timePart.split(":");
-    const formattedHours = hours.padStart(2, "0");
-    const formattedMinutes = minutes.padStart(2, "0");
-
-    return `${formattedMonth} ${formattedDay}, ${formattedHours}:${formattedMinutes}`;
+  if (!current.location || !current.current ||
+    !forecast.forecast || !forecast.forecast.forecastday || !forecast.forecast.forecastday[0] ||
+    !astronomy.astronomy || !astronomy.astronomy.astro) {
+    return (
+      <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+        <h2>Weather data is incomplete.</h2>
+      </div>
+    );
   }
 
-  function formatDateTime2(dateString) {
-    if (!dateString) {
-      return "Invalid Date";
-    }
+  const location = current.location;
+  const forecastDays = forecast.forecast.forecastday;
+  const todayForecast = forecastDays[0];
 
-    const months = [
-      "Jan",
-      "Feb",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "Aug",
-      "Sept",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
+  const getTempGradient = (temp) => {
+    if (temp < 0) return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    if (temp < 10) return 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+    if (temp < 20) return 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)';
+    if (temp < 30) return 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)';
+    return 'linear-gradient(135deg, #ff6a00 0%, #ee0979 100%)';
+  };
 
-    const [datePart, timePart] = dateString.split(" ");
+  const getAQIStatus = (aqi) => {
+    const value = aqi || 0;
+    if (value <= 50) return { text: "Good", color: "#10b981", bg: "rgba(16, 185, 129, 0.1)" };
+    if (value <= 100) return { text: "Moderate", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.1)" };
+    if (value <= 150) return { text: "Unhealthy", color: "#ef4444", bg: "rgba(239, 68, 68, 0.1)" };
+    return { text: "Hazardous", color: "#991b1b", bg: "rgba(153, 27, 27, 0.1)" };
+  };
 
-    if (!datePart) {
-      return "Invalid Date";
-    }
+  const aqiStatus = getAQIStatus(current.current.air_quality?.pm2_5);
 
-    const [year, month, day] = datePart.split("-");
-
-    if (!year || !month || !day) {
-      return "Invalid Date";
-    }
-
-    const monthNumber = parseInt(month, 10);
-    if (isNaN(monthNumber) || monthNumber < 1 || monthNumber > 12) {
-      return "Invalid Date";
-    }
-
-    const formattedDay = parseInt(day, 10);
-    // const formattedYear = parseInt(year, 10);
-
-    const formattedMonth = months[monthNumber - 1];
-
-    if (!timePart) {
-      return `${formattedMonth} ${formattedDay}`;
-    }
-
-    const [hours, minutes] = timePart.split(":");
-    const formattedHours = hours.padStart(2, "0");
-    const formattedMinutes = minutes.padStart(2, "0");
-
-    return `${formattedHours}:${formattedMinutes}`;
-  }
-
-
-  function convertBinaryToString(value) {
-    return value === 1 ? 'Yes' : 'No';
-  }
-
-  function getHourFromTime(timeString) {
-    // Split the time string by ':'
-    const [hour] = timeString.split(':');
-    
-    // Convert the hour from string to integer and return
-    return parseInt(hour, 10);
-  }
-
-  function getHourFromString(timeString) {
-    // Check if timeString is defined and not empty
-    if (timeString && typeof timeString === 'string') {
-        // Split the timeString at ':'
-        const [hourPart] = timeString.split(':');
-        
-        // Convert the hourPart to an integer and return it
-        return parseInt(hourPart, 10);
-    }
-    // Return a default value or handle the case when timeString is invalid
-    return null; // or any other appropriate default value
-}
-
+  const hourlyData = (todayForecast.hour || []).filter((hour) => {
+    if (!hour || !hour.time) return false;
+    const hourTime = new Date(hour.time);
+    const currentTime = new Date(current.location.localtime);
+    return hourTime >= currentTime;
+  }).slice(0, 12);
 
   return (
-    <div className="sBody" style={{ marginTop: navbarHeight, color: "white" }}>
-      <div
-        className="sLocation container d-flex justify-content-center pt-3"
-        style={{ color: "white" }}
-      > 
-      {info.current.location ? info.current.location.name : "N/A"}
-      </div>
+    <div style={{
+      padding: '2rem 1rem',
+      maxWidth: '1400px',
+      margin: '0 auto',
+      animation: 'fadeIn 0.6s ease-out'
+    }}>
+      {/* Hero Section */}
+      <div className="glass-card" style={{
+        background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(30, 41, 59, 0.7))',
+        marginBottom: '2rem',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '4px',
+          background: getTempGradient(current.current.temp_c)
+        }} />
 
-      <div className="sTandC container d-flex flex-column flex-md-row justify-content-evenly">
-        <div className="sTimes d-flex flex-column">
-          <div className="sLiveTimeO d-flex justify-content-center">
-            <div className="sLiveTime">{info.current.location ? formatDateTime(info.current.location.localtime) : "N/A"}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '2rem', alignItems: 'center' }}>
+          <div>
+            <h1 className="text-huge" style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>
+              {location.name}, {location.country}
+            </h1>
+            <p className="text-secondary" style={{ marginBottom: '0.5rem' }}>
+              {new Date(location.localtime).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </p>
+            <p className="text-secondary">
+              {new Date(location.localtime).toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </p>
           </div>
-          <div className="sAstroTime d-flex text-white-50 flex-column flex-md-row border border-dark-subtle rounded m-2">
-            <div className="sSunrise p-3">SunRise = {info.astronomy.astronomy ? info.astronomy.astronomy.astro.sunrise : "N/A"}</div>
-            <div className="sSunSet p-3"> SunSet = {info.astronomy.astronomy ? info.astronomy.astronomy.astro.sunset : "N/A"}</div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <WeatherIcon
+              code={current.current.condition?.code || 1000}
+              isDay={current.current.is_day}
+              size={100}
+              color="var(--accent-color)"
+            />
+            <div>
+              <div style={{
+                fontSize: '5rem',
+                fontWeight: '700',
+                background: getTempGradient(current.current.temp_c),
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                lineHeight: 1
+              }}>
+                {Math.round(current.current.temp_c)}°
+              </div>
+              <div className="text-large text-accent">
+                {current.current.condition?.text || "N/A"}
+              </div>
+              <div className="text-secondary">
+                Feels like {Math.round(current.current.feelslike_c)}°C
+              </div>
+            </div>
           </div>
         </div>
-        <div className="sTempratures d-flex flex-column ">
-          <div className="sLiveTempO d-flex justify-content-center">
-            <div className="sLiveTemp">{info.current.current ? info.current.current.temp_c + "°C" : "N/A"}</div>
+      </div>
+
+      {/* Stats Grid */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gap: '1rem',
+        marginBottom: '2rem'
+      }}>
+        {/* Humidity */}
+        <div className="glass-card" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <span className="text-secondary">Humidity</span>
+            <WiHumidity size={32} color="#38bdf8" />
           </div>
-          <div className="sTempLimits d-flex flex-column text-white-50 flex-md-row border border-dark-subtle rounded m-2">
-            <div className="sMinTemp p-3">Min Temp : {info.forecast.forecast ? info.forecast.forecast.forecastday[0].day.mintemp_c + "°C" : "N/A"}</div>
-            <div className="sMaxTemp p-3">Max Temp : {info.forecast.forecast.forecastday ? info.forecast.forecast.forecastday[0].day.maxtemp_c + "°C" : "N/A"}</div>
+          <div className="text-huge" style={{ fontSize: '2.5rem' }}>{current.current.humidity}%</div>
+          <div style={{
+            marginTop: '1rem',
+            background: 'rgba(56, 189, 248, 0.1)',
+            height: '6px',
+            borderRadius: '3px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              width: `${current.current.humidity}%`,
+              height: '100%',
+              background: '#38bdf8',
+              transition: 'width 0.5s ease'
+            }} />
+          </div>
+        </div>
+
+        {/* Wind */}
+        <div className="glass-card" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <span className="text-secondary">Wind Speed</span>
+            <WiStrongWind size={32} color="#8b5cf6" />
+          </div>
+          <div className="text-huge" style={{ fontSize: '2.5rem' }}>{current.current.wind_kph}</div>
+          <div className="text-secondary">km/h {current.current.wind_dir}</div>
+          <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FiWind color="#8b5cf6" />
+            <span className="text-small text-secondary">Gusts: {current.current.gust_kph} km/h</span>
+          </div>
+        </div>
+
+        {/* Pressure */}
+        <div className="glass-card" style={{ padding: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <span className="text-secondary">Pressure</span>
+            <WiBarometer size={32} color="#fbbf24" />
+          </div>
+          <div className="text-huge" style={{ fontSize: '2.5rem' }}>{current.current.pressure_mb}</div>
+          <div className="text-secondary">mb</div>
+        </div>
+
+        {/* Air Quality */}
+        <div className="glass-card" style={{ padding: '1.5rem', background: aqiStatus.bg }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <span className="text-secondary">Air Quality</span>
+            <div style={{
+              padding: '0.25rem 0.75rem',
+              borderRadius: '12px',
+              background: aqiStatus.color,
+              color: '#fff',
+              fontSize: '0.875rem',
+              fontWeight: '600'
+            }}>
+              {aqiStatus.text}
+            </div>
+          </div>
+          <div className="text-huge" style={{ fontSize: '2.5rem', color: aqiStatus.color }}>
+            {Math.round(current.current.air_quality?.pm2_5 || 0)}
+          </div>
+          <div className="text-secondary">PM2.5 μg/m³</div>
+        </div>
+      </div>
+
+      {/* 7-Day Forecast */}
+      <div className="glass-card" style={{ marginBottom: '2rem' }}>
+        <h2 className="text-large text-accent" style={{ marginBottom: '1.5rem' }}>7-Day Forecast</h2>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+          gap: '1rem'
+        }}>
+          {forecastDays.map((day, index) => {
+            if (!day || !day.day) return null;
+            const date = new Date(day.date);
+            const dayName = index === 0 ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short' });
+
+            return (
+              <div key={index} style={{
+                padding: '1rem',
+                background: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                textAlign: 'center',
+                transition: 'all 0.3s ease'
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <div className="text-secondary" style={{ marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+                  {dayName}
+                </div>
+                <WeatherIcon
+                  code={day.day.condition?.code || 1000}
+                  isDay={1}
+                  size={48}
+                  color="var(--accent-color)"
+                />
+                <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'center', gap: '0.5rem', alignItems: 'baseline' }}>
+                  <span style={{ fontSize: '1.25rem', fontWeight: '600' }}>
+                    {Math.round(day.day.maxtemp_c)}°
+                  </span>
+                  <span className="text-secondary">
+                    {Math.round(day.day.mintemp_c)}°
+                  </span>
+                </div>
+                <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
+                  <WiRain size={16} color="#38bdf8" />
+                  <span className="text-small text-secondary">{day.day.daily_chance_of_rain}%</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Hourly Forecast */}
+      <div className="glass-card" style={{ marginBottom: '2rem' }}>
+        <h2 className="text-large text-accent" style={{ marginBottom: '1.5rem' }}>Hourly Forecast</h2>
+        <div style={{
+          display: 'flex',
+          overflowX: 'auto',
+          gap: '1rem',
+          paddingBottom: '1rem'
+        }}>
+          {hourlyData.map((hour, index) => {
+            const hourTime = new Date(hour.time);
+            return (
+              <div key={index} style={{
+                minWidth: '100px',
+                padding: '1rem',
+                background: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                textAlign: 'center'
+              }}>
+                <div className="text-secondary" style={{ marginBottom: '0.75rem', fontSize: '0.875rem' }}>
+                  {hourTime.getHours()}:00
+                </div>
+                <WeatherIcon
+                  code={hour.condition?.code || 1000}
+                  isDay={hour.is_day}
+                  size={40}
+                />
+                <div style={{ marginTop: '0.75rem', fontSize: '1.125rem', fontWeight: '600' }}>
+                  {Math.round(hour.temp_c)}°
+                </div>
+                <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
+                  <WiRain size={16} color="#38bdf8" />
+                  <span className="text-small text-secondary">{hour.chance_of_rain}%</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Sun & Moon */}
+      <div className="glass-card" style={{
+        background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(30, 41, 59, 0.7))'
+      }}>
+        <h2 className="text-large text-accent" style={{ marginBottom: '1.5rem' }}>Sun & Moon</h2>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '1.5rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <WiSunrise size={48} color="#fbbf24" />
+            <div>
+              <div className="text-secondary">Sunrise</div>
+              <div className="text-large">{astronomy.astronomy.astro.sunrise}</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <WiSunset size={48} color="#fbbf24" />
+            <div>
+              <div className="text-secondary">Sunset</div>
+              <div className="text-large">{astronomy.astronomy.astro.sunset}</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ fontSize: '3rem' }}>🌙</div>
+            <div>
+              <div className="text-secondary">Moon Phase</div>
+              <div className="text-large">{astronomy.astronomy.astro.moon_phase}</div>
+            </div>
           </div>
         </div>
       </div>
-
-      <div className="sInfo1 d-flex flex-column flex-md-row container justify-content-between pt-3">
-        <div className="sRainInfo border border-info p-4 m-2 rounded ">
-          <div className="sRainChance">Rain Chance = {info.forecast.forecast.forecastday ? info.forecast.forecast.forecastday[0].day.daily_chance_of_rain + "%" : "N/A"} </div>
-          <div className="sIsRain">will it Rain = {info.forecast.forecast.forecastday ? convertBinaryToString(info.forecast.forecast.forecastday[0].day.daily_will_it_rain) : "N/A"}</div>
-          <div className="sRainAmt">Rain Amt. = {info.current.current ? info.current.current.precip_mm + " mm" : "N/A"} </div>
-        </div>
-        <div className="sHumidInfo p-4 m-2 border border-info rounded">
-          <div className="sHumidity">Humidity = {info.current.current ? info.current.current.humidity + "%" : "N/A"}</div>
-          <div className="sFeelsLike">feels like = {info.current.current ? info.current.current.feelslike_c + "°C" : "N/A"}</div>
-          <div className="sCloudCvr">Cloud Cover = {info.current.current ? info.current.current.cloud + "%" : "N/A"}</div>
-        </div>
-        <div className="sSnowInfo p-4 m-2 border border-info rounded">
-          <div className="sSnowChance">Snow Chance = {info.forecast.forecast.forecastday ? info.forecast.forecast.forecastday[0].day.daily_chance_of_snow + "%" : "N/A"}</div>
-          <div className="sIsSnow">will it Snow = {info.forecast.forecast.forecastday ? convertBinaryToString(info.forecast.forecast.forecastday[0].day.daily_will_it_snow) : "N/A"}</div>
-          <div className="sSnowAmt">UV = {info.current.current ? info.current.current.uv : "N/A"}</div>
-        </div>
-      </div>
-
-      <div className="sHourlyF container d-flex justify-content-evenly flex-wrap p-4">
-        <div className="sHT p-3">
-        <div className="sHour">{info.forecast.forecast.forecastday && info.current.current ?info.forecast.forecast.forecastday[0].hour[getHourFromString((getHourFromTime(formatDateTime2(info.current.location.localtime)))+1 + ":00")].temp_c + "°C":"N/A"}</div>
-          <div className="sHourTemp">{info.forecast.forecast.forecastday && info.current.current ? (getHourFromTime(formatDateTime2(info.current.location.localtime)))+1 + ":00"  : "N/A"}</div>
-          
-        </div>
-        <div className="sHT p-3">
-        <div className="sHour">{info.forecast.forecast.forecastday && info.current.current ?info.forecast.forecast.forecastday[0].hour[getHourFromString((getHourFromTime(formatDateTime2(info.current.location.localtime)))+2 + ":00")].temp_c + "°C":"N/A"}</div>
-          <div className="sHourTemp">{info.forecast.forecast.forecastday && info.current.current ? (getHourFromTime(formatDateTime2(info.current.location.localtime)))+2 + ":00"  : "N/A"}</div>
-         
-        </div>
-        <div className="sHT p-3">
-        <div className="sHour">{info.forecast.forecast.forecastday && info.current.current ?info.forecast.forecast.forecastday[0].hour[getHourFromString((getHourFromTime(formatDateTime2(info.current.location.localtime)))+3 + ":00")].temp_c + "°C":"N/A"}</div>
-          <div className="sHourTemp">{info.forecast.forecast.forecastday && info.current.current ? (getHourFromTime(formatDateTime2(info.current.location.localtime)))+3 + ":00"  : "N/A"}</div>
-          
-        </div>
-        <div className="sHT p-3">
-  {(() => {
-    try {
-      const index = getHourFromString((getHourFromTime(formatDateTime2(info.current.location.localtime))) + 4 + ":00");
-      const temp = info.forecast.forecast.forecastday[0].hour[index]?.temp_c || "N/A";
-      const time = (getHourFromTime(formatDateTime2(info.current.location.localtime))) + 4 + ":00";
-      return (
-        <>
-          <div className="sHour">{temp !== "N/A" ? temp + "°C" : "N/A"}</div>
-          <div className="sHourTemp">{temp !== "N/A" ? time : "N/A"}</div>
-        </>
-      );
-    } catch (error) {
-      return (
-        <>
-          <div className="sHour">N/A</div>
-          <div className="sHourTemp">N/A</div>
-        </>
-      );
-    }
-  })()}
-</div>
-
-<div className="sHT p-3">
-  {(() => {
-    try {
-      const index = getHourFromString((getHourFromTime(formatDateTime2(info.current.location.localtime))) + 5 + ":00");
-      const temp = info.forecast.forecast.forecastday[0].hour[index]?.temp_c || "N/A";
-      const time = (getHourFromTime(formatDateTime2(info.current.location.localtime))) + 5 + ":00";
-      return (
-        <>
-          <div className="sHour">{temp !== "N/A" ? temp + "°C" : "N/A"}</div>
-          <div className="sHourTemp">{temp !== "N/A" ? time : "N/A"}</div>
-        </>
-      );
-    } catch (error) {
-      return (
-        <>
-          <div className="sHour">N/A</div>
-          <div className="sHourTemp">N/A</div>
-        </>
-      );
-    }
-  })()}
-</div>
-
-<div className="sHT p-3">
-  {(() => {
-    try {
-      const index = getHourFromString((getHourFromTime(formatDateTime2(info.current.location.localtime))) + 6 + ":00");
-      const temp = info.forecast.forecast.forecastday[0].hour[index]?.temp_c || "N/A";
-      const time = (getHourFromTime(formatDateTime2(info.current.location.localtime))) + 6 + ":00";
-      return (
-        <>
-          <div className="sHour">{temp !== "N/A" ? temp + "°C" : "N/A"}</div>
-          <div className="sHourTemp">{temp !== "N/A" ? time : "N/A"}</div>
-        </>
-      );
-    } catch (error) {
-      return (
-        <>
-          <div className="sHour">N/A</div>
-          <div className="sHourTemp">N/A</div>
-        </>
-      );
-    }
-  })()}
-</div>
-
-<div className="sHT p-3">
-  {(() => {
-    try {
-      const index = getHourFromString((getHourFromTime(formatDateTime2(info.current.location.localtime))) + 7 + ":00");
-      const temp = info.forecast.forecast.forecastday[0].hour[index]?.temp_c || "N/A";
-      const time = (getHourFromTime(formatDateTime2(info.current.location.localtime))) + 7 + ":00";
-      return (
-        <>
-          <div className="sHour">{temp !== "N/A" ? temp + "°C" : "N/A"}</div>
-          <div className="sHourTemp">{temp !== "N/A" ? time : "N/A"}</div>
-        </>
-      );
-    } catch (error) {
-      return (
-        <>
-          <div className="sHour">N/A</div>
-          <div className="sHourTemp">N/A</div>
-        </>
-      );
-    }
-  })()}
-</div>
-
-      </div>
-
-      <div className="sAQ container d-flex flex-wrap justify-content-around border-top border-bottom border-info">
-        <div className="sAQTitle m-2">
-          Air Quality (μg/m<sup>3</sup>) :
-        </div>
-        <div className="sAQParameters d-flex flex-wrap justify-content-around ">
-          <div className="sAQPara m-3">PM 2.5 = {info.current.current ? info.current.current.air_quality.pm2_5 : "N/A"}</div>
-          <div className="sAQPara m-3">PM 10 = {info.current.current ? info.current.current.air_quality.pm10 : "N/A"}</div>
-          <div className="sAQPara m-3">NO2 = {info.current.current ? info.current.current.air_quality.no2 : "N/A"}</div>
-          <div className="sAQPara m-3">SO2 = {info.current.current ? info.current.current.air_quality.so2 : "N/A"}</div>
-          <div className="sAQPara m-3">O3 = {info.current.current ? info.current.current.air_quality.o3 : "N/A"}</div>
-        </div>
-      </div>
-
-      <div className="sInfo2 d-flex flex-wrap justify-content-around p-4 border-bottom container border-info mb-5">
-        <div className="sWindSpeed">Wind Speed = {info.current.current ? info.current.current.wind_mph + " mph" : "N/A"}</div>
-        <div className="sWindDirection">Wind Direction = {info.current.current ? info.current.current.wind_degree + "°" : "N/A"}</div>
-        <div className="sPressure">Pressure = {info.current.current ? info.current.current.pressure_in + " psi" : "N/A"}</div>
-      </div>
-
-
-      <div className="end d-flex justify-content-center align-items-center">E N D</div>
     </div>
   );
 }
 
 export default SearchResult;
-
-

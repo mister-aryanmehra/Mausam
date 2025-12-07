@@ -5,20 +5,46 @@ import Home from "./components/Home.js";
 import SearchResult from './components/SearchResult.js';
 
 function App() {
-  const [isSearchMode, setIsSearchMode] = useState(false);
-  const [query, setQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchActive, setIsSearchActive] = useState(false);
 
-  const handleSearchModeToggle = (searching) => {
-    setIsSearchMode(searching);
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    setIsSearchActive(!!query);
+  };
+
+  const handleHomeClick = () => {
+    setSearchQuery("");
+    setIsSearchActive(false);
+  };
+
+  const handleCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        handleSearch(`${latitude},${longitude}`);
+      }, (error) => {
+        alert("Unable to retrieve your location");
+      });
+    } else {
+      alert("Geolocation is not supported by your browser");
+    }
   };
 
   return (
-    <div>
-      <Navbar 
-        onSearchModeToggle={handleSearchModeToggle} 
-        onSearch={(q) => setQuery(q)} // Pass the query to the state
+    <div className="App" style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+      <Navbar
+        onSearch={handleSearch}
+        onHomeClick={handleHomeClick}
+        onCurrentLocation={handleCurrentLocation}
       />
-      {isSearchMode ? <SearchResult query={query} /> : <Home />}
+      <div className="main-content">
+        {isSearchActive ? (
+          <SearchResult query={searchQuery} />
+        ) : (
+          <Home />
+        )}
+      </div>
     </div>
   );
 }

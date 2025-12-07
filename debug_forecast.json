@@ -1,0 +1,154 @@
+{
+  "location": {
+    "name": "New Delhi",
+    "region": "Delhi",
+    "country": "India",
+    "lat": 28.6,
+    "lon": 77.2,
+    "tz_id": "Asia/Kolkata",
+    "localtime_epoch": 1764880855,
+    "localtime": "2025-12-05 02:10"
+  },
+  "current": {
+    "last_updated": "2025-12-05 02:00",
+    "temp_c": 11.3,
+    "wind_mph": 4.5,
+    "wind_degree": 314,
+    "pressure_in": 30.12,
+    "precip_mm": 0,
+    "humidity": 76,
+    "cloud": 0,
+    "feelslike_c": 10.7,
+    "heatindex_c": 15.9,
+    "uv": 0,
+    "air_quality": {
+      "co": 1355.85,
+      "no2": 69.45,
+      "o3": 46,
+      "so2": 45.95,
+      "pm2_5": 103.75,
+      "pm10": 103.95,
+      "us-epa-index": 4,
+      "gb-defra-index": 10
+    }
+  },
+  "forecast": {
+    "forecastday": [
+      {
+        "date": "2025-12-05",
+        "day": {
+          "maxtemp_c": 23.7,
+          "mintemp_c": 14.5,
+          "avgtemp_c": 18.7,
+          "totalprecip_mm": 0,
+          "daily_will_it_rain": 0,
+          "daily_chance_of_rain": 0,
+          "daily_will_it_snow": 0,
+          "daily_chance_of_snow": 0
+        },
+        "astro": {
+          "sunrise": "06:59 AM",
+          "sunset": "05:24 PM"
+        },
+        "hour": [
+          {
+            "time": "2025-12-05 00:00",
+            "temp_c": 16.7
+          },
+          {
+            "time": "2025-12-05 01:00",
+            "temp_c": 16.2
+          },
+          {
+            "time": "2025-12-05 02:00",
+            "temp_c": 11.3
+          },
+          {
+            "time": "2025-12-05 03:00",
+            "temp_c": 15.4
+          },
+          {
+            "time": "2025-12-05 04:00",
+            "temp_c": 15
+          },
+          {
+            "time": "2025-12-05 05:00",
+            "temp_c": 14.7
+          },
+          {
+            "time": "2025-12-05 06:00",
+            "temp_c": 14.5
+          },
+          {
+            "time": "2025-12-05 07:00",
+            "temp_c": 14.6
+          },
+          {
+            "time": "2025-12-05 08:00",
+            "temp_c": 15.9
+          },
+          {
+            "time": "2025-12-05 09:00",
+            "temp_c": 17.6
+          },
+          {
+            "time": "2025-12-05 10:00",
+            "temp_c": 19.4
+          },
+          {
+            "time": "2025-12-05 11:00",
+            "temp_c": 20.9
+          },
+          {
+            "time": "2025-12-05 12:00",
+            "temp_c": 22.1
+          },
+          {
+            "time": "2025-12-05 13:00",
+            "temp_c": 22.9
+          },
+          {
+            "time": "2025-12-05 14:00",
+            "temp_c": 23.5
+          },
+          {
+            "time": "2025-12-05 15:00",
+            "temp_c": 23.7
+          },
+          {
+            "time": "2025-12-05 16:00",
+            "temp_c": 23.2
+          },
+          {
+            "time": "2025-12-05 17:00",
+            "temp_c": 21.6
+          },
+          {
+            "time": "2025-12-05 18:00",
+            "temp_c": 20.8
+          },
+          {
+            "time": "2025-12-05 19:00",
+            "temp_c": 20.1
+          },
+          {
+            "time": "2025-12-05 20:00",
+            "temp_c": 19.5
+          },
+          {
+            "time": "2025-12-05 21:00",
+            "temp_c": 18.9
+          },
+          {
+            "time": "2025-12-05 22:00",
+            "temp_c": 18.5
+          },
+          {
+            "time": "2025-12-05 23:00",
+            "temp_c": 17.9
+          }
+        ]
+      }
+    ]
+  }
+}

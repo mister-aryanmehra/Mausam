@@ -1,0 +1,35 @@
+{
+  "location": {
+    "name": "New Delhi",
+    "region": "Delhi",
+    "country": "India",
+    "lat": 28.6,
+    "lon": 77.2,
+    "tz_id": "Asia/Kolkata",
+    "localtime_epoch": 1764880768,
+    "localtime": "2025-12-05 02:09"
+  },
+  "current": {
+    "last_updated": "2025-12-05 02:00",
+    "temp_c": 11.3,
+    "wind_mph": 4.5,
+    "wind_degree": 314,
+    "pressure_in": 30.12,
+    "precip_mm": 0,
+    "humidity": 76,
+    "cloud": 0,
+    "feelslike_c": 10.7,
+    "heatindex_c": 15.9,
+    "uv": 0,
+    "air_quality": {
+      "co": 1355.85,
+      "no2": 69.45,
+      "o3": 46,
+      "so2": 45.95,
+      "pm2_5": 103.75,
+      "pm10": 103.95,
+      "us-epa-index": 4,
+      "gb-defra-index": 10
+    }
+  }
+}
